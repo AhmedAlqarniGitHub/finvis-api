@@ -12,6 +12,7 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
   context: ({ req }) => {
+    console.log(req);
     // Add context handling here if needed
   },
   introspection: true,  // Set to false in production for security
