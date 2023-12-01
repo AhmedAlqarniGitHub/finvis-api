@@ -2,12 +2,14 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const  { connectToDB, getDB } = require('./db.js');
+const cors = require("cors");
 
 require('dotenv').config();
 const PORT = process.env.PORT || 8080;
 
 const app = express();
 app.use(express.json());
+app.use(cors())
 
 let db;
 
@@ -55,7 +57,7 @@ app.post('/login', async (req, res) => {
             const accessToken = jwt.sign({ username: user.username }, process.env.ACCESS_TOKEN_SECRET);
             res.json({ accessToken: accessToken });
         } else {
-            res.send('Not Allowed');
+            res.status(401).send("Not Allowed");
         }
     } catch (error) {
         res.status(500).send(error.message);
