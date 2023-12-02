@@ -46,23 +46,25 @@ app.get('/users', async (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
+    console.log("req.body.username :: "+ req.body.username )
     try {
         const user = await db.collection('users').findOne({ username: req.body.username });
 
         if (!user) {
-            return res.status(400).send('Cannot find user');
+            return res.status(400).json({ message: 'User not found' });
         }
 
         if (await bcrypt.compare(req.body.password, user.password)) {
             const accessToken = jwt.sign({ username: user.username }, process.env.ACCESS_TOKEN_SECRET);
             res.json({ accessToken: accessToken });
         } else {
-            res.status(401).send("Not Allowed");
+            res.status(401).json({ message: "Invalid credentials" });
         }
     } catch (error) {
-        res.status(500).send(error.message);
+        res.status(500).json({ message: error.message });
     }
 });
+
 
 connectToDB(process.env.MONGODB_URI).then(() => {
     db = getDB();
