@@ -1,0 +1,37 @@
+type Query {
+  user(id: ID!): User
+}
+
+type Mutation {
+  updateUser(
+    userId: ID!
+    salary: Float
+    salaryDay: Int
+    obligations: [ObligationInput]
+  ): User
+}
+
+input ObligationInput {
+  name: String!
+  amount: Float!
+}
+
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  password: String!
+  phone: String
+  age: Int
+  incomeSource: String
+  salary: Float
+  salaryDay: Int
+  obligations: [Obligation]
+}
+
+type Obligation {
+  id: ID!
+  user: ID!
+  name: String!
+  amount: Float!
+}

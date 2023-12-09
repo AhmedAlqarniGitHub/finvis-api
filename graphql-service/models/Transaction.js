@@ -1,7 +1,7 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+const mongoose = require('mongoose').set('debug', true);
+const Schema = mongoose.Schema; // Define Schema
 
-const TransactionSchema = new mongoose.Schema({
+const TransactionSchema = new Schema({
   // user: {
   //   type: Schema.Types.ObjectId,
   //   ref: 'User',

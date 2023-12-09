@@ -56,7 +56,7 @@ app.post('/login', async (req, res) => {
 
         if (await bcrypt.compare(req.body.password, user.password)) {
             const accessToken = jwt.sign({ username: user.username }, process.env.ACCESS_TOKEN_SECRET);
-            res.json({ accessToken: accessToken });
+            res.json({userid:user._id.toString(), accessToken: accessToken });
         } else {
             res.status(401).json({ message: "Invalid credentials" });
         }
@@ -66,7 +66,7 @@ app.post('/login', async (req, res) => {
 });
 
 
-connectToDB(process.env.MONGODB_URI).then(() => {
+connectToDB(process.env.MONGO_Ahmed_URL).then(() => {
     db = getDB();
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);

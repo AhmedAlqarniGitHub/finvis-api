@@ -1,27 +1,30 @@
-// index.js
-
-const { ApolloServer } = require('apollo-server-cloud-functions');
-const typeDefs = require('./schema');
+const { ApolloServer, gql } = require('apollo-server');
+const mongoose = require('./db');
 const resolvers = require('./resolvers');
-const mongoose = require('mongoose');
+const fs = require('fs');
+const path = require('path');
+require('dotenv').config();
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+// Read the schema file
+const typeDefs = gql(fs.readFileSync(path.join(__dirname, 'schema.gql'), 'utf-8'));
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: ({ req }) => {
-    console.log(req);
-    // Add context handling here if needed
+  formatError: (error) => {
+    console.error('GraphQL Error:', error);
+    return error;
   },
-  introspection: true,  // Set to false in production for security
-  playground: true,     // Set to false in production for security
+  context: ({ req }) => {
+    console.log('Context function called');
+    // Add context handling here if needed
+  
+  },
+  introspection: true,  // Useful for development
+  playground: true,     // Useful for development
 });
 
-exports.graphqlFunction = server.createHandler({
-  cors: {
-    origin: '*', // Configure CORS policy for your needs
-    credentials: true,
-  },
+// Start the server
+server.listen().then(({ url }) => {
+  console.log(`🚀 Server ready at ${url}`);
 });
