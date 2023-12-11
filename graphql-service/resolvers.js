@@ -1,86 +1,105 @@
-// const Transaction = require('./models/Transaction.js');
-// const SavingsTarget = require('./models/SavingsTarget.js');
-
-// const resolvers = {
-//   Query: {
-//     transactions: async () => await Transaction.find({}),
-//     expenseCategories: async () => await ExpenseCategory.find({}),
-//     savingsTargets: async () => await SavingsTarget.find({})
-//   },
-//   Mutation: {
-//     addTransaction: async (_, { amount, date, description, category }) => {
-//       const newTransaction = new Transaction({ amount, date, description, category });
-//       await newTransaction.save();
-//       return newTransaction;
-//     },
-//     addSavingsTarget: async (_, { targetAmount, description }) => {
-//       const newTarget = new SavingsTarget({ targetAmount, currentAmount: 0, description });
-//       await newTarget.save();
-//       return newTarget;
-//     }
-//   }
-// };
-
-// module.exports = resolvers;
-
-const User = require('./models/User'); // Adjust the path to your User model
-const Obligation = require('./models/Obligation'); // Adjust the path to your Obligation model
+const User = require('./models/User');
+const Obligation = require('./models/Obligation');
+const SavingsTarget = require('./models/SavingsTarget');
+const Transaction = require('./models/Transaction')
 
 const resolvers = {
+  Query: {
+    user: async (_, { id }) => {
+      const user = await User.findById(id).populate('obligations');
+      console.log(user); // Check the output
+      return user;
+    },
+    savingsTarget: async (_, { userId }) => {
+      return await SavingsTarget.findOne({ user: userId });
+    },
+    totalSavings: async (_, { userId }) => {
+      return calculateTotalSavings(userId);
+    },
+    // ... other query resolvers ...
+  },
   Mutation: {
     updateUser: async (_, { userId, salary, salaryDay, obligations }) => {
-      const user = await User.findById(userId);
-      if (!user) {
-        console.log(`No user found with ID: ${userId}`);
-        throw new Error('User not found');
-      }
-    
+      // First, handle the obligations
+      await Obligation.deleteMany({ user: userId });
+  
+      const newObligations = await Obligation.insertMany(
+        obligations.map(obligation => ({
+          ...obligation,
+          user: userId
+        }))
+      );
+  
+      // Get the IDs of the new obligations
+      const obligationsIds = newObligations.map(obligation => obligation._id);
+  
+      // Now, update the user with the new salary, salaryDay, and obligations
       const updatedUser = await User.findByIdAndUpdate(
         userId,
-        { salary, salaryDay },
+        { 
+          salary, 
+          salaryDay, 
+          obligations: obligationsIds 
+        },
         { new: true }
-      );
-    
+      ).populate('obligations');
+  
       if (!updatedUser) {
-        console.log(`Failed to update user with ID: ${userId}`);
-        throw new Error('Error updating user');
+        throw new Error('User not found');
       }
-    
-      // Convert the updated user document to a plain JavaScript object
-      const updatedUserObject = updatedUser.toObject();
-    
-      // Ensure the id field is populated
-      if (!updatedUserObject.id) {
-        updatedUserObject.id = updatedUser._id;
-      }
-    
-        // Remove existing obligations
-  await Obligation.deleteMany({ user: userId });
-
-  // Create new obligations
-  const newObligations = obligations.map(obligation => ({
-    ...obligation,
-    user: userId
-  }));
-  await Obligation.insertMany(newObligations);
-
-  // Retrieve updated obligations to return with the user
-  const updatedObligations = await Obligation.find({ user: userId });
-
- 
-
-  // Ensure the id field is populated
-  if (!updatedUserObject.id) {
-    updatedUserObject.id = updatedUser._id;
-  }
-    
-      return {
-        ...updatedUserObject,
-        obligations: updatedObligations
-      };
+  
+      return updatedUser;
     },
-  }
-  // ... other resolvers ...
+    addSavingsTarget: async (_, { userId, targetAmount }) => {
+      const existingTarget = await SavingsTarget.findOne({ user: userId });
+
+      if (existingTarget) {
+        const updatedTarget = await SavingsTarget.findOneAndUpdate(
+          { user: userId },
+          { targetAmount },
+          { new: true }
+        );
+        return updatedTarget;
+      } else {
+        const newTarget = new SavingsTarget({
+          user: userId,
+          targetAmount,
+          currentAmount: 0
+        });
+        await newTarget.save();
+        return newTarget;
+      }
+    },
+    // ... other mutation resolvers ...
+  },
+  // ... other types of resolvers, if any ...
 };
+
+async function calculateTotalSavings(userId) {
+  const user = await User.findById(userId).populate('obligations');
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  // Calculate total income and outcome from transactions
+  const transactions = await Transaction.find({ user: userId });
+  const totalIncome = transactions
+    .filter(t => t.transactionType === 'income')
+    .reduce((sum, t) => sum + t.amount, 0);
+  const totalOutcome = transactions
+    .filter(t => t.transactionType === 'outcome')
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  // Calculate total obligations
+  const totalObligations = user.obligations
+    .reduce((sum, obligation) => sum + obligation.amount, 0);
+
+  // Calculate total savings
+  const totalSavings = user.salary + totalIncome - totalOutcome - totalObligations;
+
+  return totalSavings;
+}
+
+
 
 module.exports = resolvers;

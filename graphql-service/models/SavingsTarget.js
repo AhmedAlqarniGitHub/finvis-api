@@ -15,7 +15,6 @@ const SavingsTargetSchema = new Schema({
     type: Number,
     default: 0
   },
-  description: String
 });
 
 module.exports = mongoose.model('SavingsTarget', SavingsTargetSchema);

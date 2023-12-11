@@ -36,6 +36,10 @@ const UserSchema = new Schema({
     type: Number,
     required: false
   },
+  obligations: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Obligation' // Replace with the name of your Obligation model
+  }]
 });
 
 module.exports = mongoose.model('User', UserSchema);

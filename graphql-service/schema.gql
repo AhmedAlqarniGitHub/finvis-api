@@ -1,5 +1,8 @@
 type Query {
   user(id: ID!): User
+  savingsTarget(userId: ID!): SavingsTarget
+  totalSavings(userId: ID!): Float
+
 }
 
 type Mutation {
@@ -9,6 +12,17 @@ type Mutation {
     salaryDay: Int
     obligations: [ObligationInput]
   ): User
+  addSavingsTarget(
+    userId: ID!
+    targetAmount: Float!
+  ): SavingsTarget
+}
+
+type SavingsTarget {
+  id: ID!
+  user: ID!
+  targetAmount: Float!
+  currentAmount: Float!
 }
 
 input ObligationInput {
