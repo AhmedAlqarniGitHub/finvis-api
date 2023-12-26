@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
 // Environment variables
-const MONGO_URI = process.env.MONGO_Ahmed_URL;
+const MONGO_URI = process.env.MONGODB_URI;
 
 // MongoDB Client setup
 let db;

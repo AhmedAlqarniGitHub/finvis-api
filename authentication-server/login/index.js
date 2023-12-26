@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
 // Environment variables
-const MONGO_URI = process.env.MONGO_Ahmed_URL;
+const MONGO_URI = process.env.MONGODB_URI;
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 
 // MongoDB Client setup
