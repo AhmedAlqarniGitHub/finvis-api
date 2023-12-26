@@ -2,7 +2,7 @@ type Query {
   user(id: ID!): User
   savingsTarget(userId: ID!): SavingsTarget
   totalSavings(userId: ID!): Float
-
+  transactions(userId: ID!, transactionType: String!): [Transaction]
 }
 
 type Mutation {
@@ -12,10 +12,15 @@ type Mutation {
     salaryDay: Int
     obligations: [ObligationInput]
   ): User
-  addSavingsTarget(
+  addSavingsTarget(userId: ID!, targetAmount: Float!): SavingsTarget
+  addTransaction(
     userId: ID!
-    targetAmount: Float!
-  ): SavingsTarget
+    amount: Float!
+    date: String!
+    transactionType: String!
+    description: String
+    category: String
+  ): Transaction
 }
 
 type SavingsTarget {
@@ -48,4 +53,14 @@ type Obligation {
   user: ID!
   name: String!
   amount: Float!
+}
+
+type Transaction {
+  id: ID!
+  user: ID!
+  amount: Float!
+  date: String!
+  transactionType: String!
+  description: String
+  category: String
 }
