@@ -1,37 +1,71 @@
-const { gql } = require('apollo-server-cloud-functions');
+const { gql } = require('apollo-server-express');
 
 const typeDefs = gql`
-  type Transaction {
-    id: ID!
-    amount: Float!
-    date: String!
-    description: String
-    category: String
+  type Query {
+    user(id: ID!): User
+    savingsTarget(userId: ID!): SavingsTarget
+    totalSavings(userId: ID!): Float
+    transactions(userId: ID!, transactionType: String!): [Transaction]
   }
 
-  type ExpenseCategory {
-    id: ID!
-    name: String!
-    description: String
+  type Mutation {
+    updateUser(
+      userId: ID!
+      salary: Float
+      salaryDay: Int
+      obligations: [ObligationInput]
+    ): User
+    addSavingsTarget(userId: ID!, targetAmount: Float!): SavingsTarget
+    addTransaction(
+      userId: ID!
+      amount: Float!
+      date: String!
+      transactionType: String!
+      description: String
+      category: String
+    ): Transaction
   }
 
   type SavingsTarget {
     id: ID!
+    user: ID!
     targetAmount: Float!
     currentAmount: Float!
+  }
+
+  input ObligationInput {
+    name: String!
+    amount: Float!
+  }
+
+  type User {
+    id: ID!
+    username: String!
+    email: String!
+    password: String!
+    phone: String
+    age: Int
+    incomeSource: String
+    salary: Float
+    salaryDay: Int
+    obligations: [Obligation]
+  }
+
+  type Obligation {
+    id: ID!
+    user: ID!
+    name: String!
+    amount: Float!
+  }
+
+  type Transaction {
+    id: ID!
+    user: ID!
+    amount: Float!
+    date: String!
+    transactionType: String!
     description: String
-  }
-
-  type Query {
-    transactions: [Transaction]
-    expenseCategories: [ExpenseCategory]
-    savingsTargets: [SavingsTarget]
-  }
-
-  type Mutation {
-    addTransaction(amount: Float!, date: String!, description: String, category: String): Transaction
-    addExpenseCategory(name: String!, description: String): ExpenseCategory
-    addSavingsTarget(targetAmount: Float!, description: String): SavingsTarget
+    category: String
   }
 `;
 

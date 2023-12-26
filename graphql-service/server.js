@@ -1,11 +1,10 @@
-// localServer.js
-
 const express = require('express');
 const { ApolloServer } = require('apollo-server-express');
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
 const mongoose = require("mongoose");
 require('dotenv').config();
+const cors = require('cors');
 
 async function startApolloServer(typeDefs, resolvers) {
   // Initialize an Express application
@@ -16,6 +15,16 @@ async function startApolloServer(typeDefs, resolvers) {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
+
+    // CORS configuration
+    const corsOptions = {
+      origin: '*', // Allow all origins
+      methods: 'GET,POST', // Allow these methods
+      allowedHeaders: 'Content-Type', // Allow these headers
+    };
+  
+    app.use(cors(corsOptions));
+  
 
   // Create a new Apollo server instance with your typeDefs and resolvers
   const server = new ApolloServer({
